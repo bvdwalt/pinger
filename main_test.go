@@ -24,12 +24,13 @@ func TestPingEndpointAPIKeyHandling(t *testing.T) {
 		name          string
 		headerName    string
 		apiKey        string
+		userAgent     string
 		shouldExist   bool
 		expectedValue string
 	}{
-		{"With API key", "X-API-Key", "secret-123", true, "secret-123"},
-		{"Without API key", "X-API-Key", "", false, ""},
-		{"Custom header", "Authorization", "Bearer token", true, "Bearer token"},
+		{"With API key", "X-API-Key", "secret-123", "Pinger", true, "secret-123"},
+		{"Without API key", "X-API-Key", "", "Pinger", false, ""},
+		{"Custom header", "Authorization", "Bearer token", "Pinger", true, "Bearer token"},
 	}
 
 	for _, tt := range tests {
@@ -41,7 +42,7 @@ func TestPingEndpointAPIKeyHandling(t *testing.T) {
 			}))
 			defer server.Close()
 
-			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, "GET"), tt.headerName, tt.apiKey)
+			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, "GET"), tt.headerName, tt.apiKey, tt.userAgent)
 
 			if tt.shouldExist && headerValue != tt.expectedValue {
 				t.Errorf("expected %q, got %q", tt.expectedValue, headerValue)
@@ -65,7 +66,7 @@ func TestPingEndpointMethods(t *testing.T) {
 			}))
 			defer server.Close()
 
-			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, method), "", "")
+			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, method), "", "", "Pinger")
 			if capturedMethod != method {
 				t.Errorf("expected %s, got %s", method, capturedMethod)
 			}
@@ -84,7 +85,7 @@ func TestPingEndpointStatusCodes(t *testing.T) {
 			defer server.Close()
 
 			// Should not panic on any status code
-			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, "GET"), "", "")
+			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, "GET"), "", "", "Pinger")
 		})
 	}
 }
@@ -97,14 +98,14 @@ func TestPingEndpointErrorCases(t *testing.T) {
 		timeout time.Duration
 	}{
 		{"Invalid URL", "://invalid", 5 * time.Second},
-		{"Connection refused", "http://localhost:1", 1 * time.Second},
-		{"Timeout", "http://httpbin.org/delay/10", 100 * time.Millisecond},
+		{"Connection refused", "https://localhost:1", 1 * time.Second},
+		{"Timeout", "https://httpbin.org/delay/10", 100 * time.Millisecond},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Should handle errors gracefully without panicking
-			pingEndpoint(testClient(tt.timeout), testEndpoint(tt.url, "GET"), "", "")
+			pingEndpoint(testClient(tt.timeout), testEndpoint(tt.url, "GET"), "", "", "Pinger")
 		})
 	}
 }
@@ -122,29 +123,29 @@ func TestStringReplacementInEndpointExpansion(t *testing.T) {
 		{
 			name:          "Simple replacement",
 			templateName:  "Endpoint {name}",
-			templateURL:   "http://example.com/{id}",
+			templateURL:   "https://example.com/{id}",
 			iterationName: "Prod",
 			iterationID:   "prod-123",
 			expectedName:  "Endpoint Prod",
-			expectedURL:   "http://example.com/prod-123",
+			expectedURL:   "https://example.com/prod-123",
 		},
 		{
 			name:          "No replacement needed",
 			templateName:  "Static Endpoint",
-			templateURL:   "http://example.com/static",
+			templateURL:   "https://example.com/static",
 			iterationName: "Prod",
 			iterationID:   "prod-123",
 			expectedName:  "Static Endpoint",
-			expectedURL:   "http://example.com/static",
+			expectedURL:   "https://example.com/static",
 		},
 		{
 			name:          "Multiple occurrences (name only replaces first)",
 			templateName:  "Endpoint {name} for {name}",
-			templateURL:   "http://example.com/{id}/{id}",
+			templateURL:   "https://example.com/{id}/{id}",
 			iterationName: "Prod",
 			iterationID:   "prod-123",
 			expectedName:  "Endpoint Prod for {name}",
-			expectedURL:   "http://example.com/prod-123/{id}",
+			expectedURL:   "https://example.com/prod-123/{id}",
 		},
 	}
 

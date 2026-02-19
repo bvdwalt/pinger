@@ -5,6 +5,8 @@ schedule: "*/5 * * * *" # Cron schedule: Every 5 minutes
 timeout-seconds: 90
 api-key-header-name: "x-api-key"
 api-key-value: "YOUR_API_KEY_HERE"
+user-agent: "Pinger/1.0 (https://github.com/bvdwalt/pinger)"
+enable-http-logging: false
 
 endpoints:
   # Simple endpoint examples

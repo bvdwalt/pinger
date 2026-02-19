@@ -8,10 +8,10 @@ import (
 )
 
 type Endpoint struct {
-	Name   string         `yaml:"name"`
-	URL    string         `yaml:"url"`
-	Method string         `yaml:"method"`
-	Iterations   []Iterations `yaml:"iterations,omitempty"`
+	Name       string       `yaml:"name"`
+	URL        string       `yaml:"url"`
+	Method     string       `yaml:"method"`
+	Iterations []Iterations `yaml:"iterations,omitempty"`
 }
 
 type Iterations struct {
@@ -20,11 +20,13 @@ type Iterations struct {
 }
 
 type Config struct {
-	APIKeyHeaderName string     `yaml:"api-key-header-name"`
-	APIKey           string     `yaml:"api-key-value"`
-	TimeoutSeconds   int        `yaml:"timeout-seconds"`
-	Schedule         string     `yaml:"schedule"`
-	Endpoints        []Endpoint `yaml:"endpoints"`
+	APIKeyHeaderName  string     `yaml:"api-key-header-name"`
+	APIKey            string     `yaml:"api-key-value"`
+	UserAgent         string     `yaml:"user-agent"`
+	TimeoutSeconds    int        `yaml:"timeout-seconds"`
+	Schedule          string     `yaml:"schedule"`
+	EnableHttpLogging bool       `yaml:"enable-http-logging"`
+	Endpoints         []Endpoint `yaml:"endpoints"`
 }
 
 func loadConfig(filename string) (*Config, error) {
@@ -39,7 +41,7 @@ func loadConfig(filename string) (*Config, error) {
 	}
 
 	// Expand endpoints with iterations
-	expandedEndpoints := []Endpoint{}
+	var expandedEndpoints []Endpoint
 	for _, ep := range config.Endpoints {
 		if len(ep.Iterations) > 0 {
 			for _, iteration := range ep.Iterations {

@@ -7,6 +7,8 @@ A simple Go application that periodically pings HTTP endpoints on a configurable
 - Configure multiple endpoints to ping via YAML
 - Cron-based scheduling (e.g., every 5 minutes)
 - Custom API key header support
+- Custom User-Agent header support
+- Full HTTP request/response logging for debugging and monitoring
 - Parameterized endpoints with iterations (ping multiple organizations with one config)
 - Logs response status codes and duration
 - Graceful shutdown
@@ -30,14 +32,29 @@ A simple Go application that periodically pings HTTP endpoints on a configurable
 The `config.yaml` file supports:
 
 - **schedule**: Cron expression (e.g., `*/5 * * * *` for every 5 minutes)
-- **timeout-seconds**: HTTP request timeout
+- **timeout-seconds**: HTTP request timeout in seconds
 - **api-key-header-name**: Header name for API authentication
 - **api-key-value**: Your API key
+- **user-agent**: Custom User-Agent header (optional)
 - **endpoints**: List of endpoints to ping
   - Simple endpoints with `name`, `url`, and `method`
   - Parameterized endpoints with `iterations` for dynamic URL/name substitution
 
 See `config-example.yaml` for examples.
+
+## Logging
+
+Pinger logs all HTTP activity including:
+- HTTP request details (method, URL, headers)
+- HTTP response status and headers
+- Endpoint response time and status code
+- Any errors encountered during requests
+
+This comprehensive logging is useful for:
+- Debugging endpoint issues
+- Monitoring API availability
+- Tracking response times
+- Identifying configuration problems
 
 ## Testing
 

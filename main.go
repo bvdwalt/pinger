@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -18,20 +19,24 @@ func main() {
 	}
 
 	client := &http.Client{
-		Timeout: time.Duration(config.TimeoutSeconds) * time.Second,
+		Timeout:   time.Duration(config.TimeoutSeconds) * time.Second,
+		Transport: NewLoggingTransport(config.EnableHttpLogging),
 	}
 
-	cron := cron.New()
+	c := cron.New()
 
 	log.Printf("Scheduling Pinger with cron: '%s'", config.Schedule)
 	for _, endpoint := range config.Endpoints {
 		ep := endpoint
 
 		// Run immediately on startup
-		go pingEndpoint(client, ep, config.APIKeyHeaderName, config.APIKey)
+		pingFunc := func() {
+			pingEndpoint(client, ep, config.APIKeyHeaderName, config.APIKey, config.UserAgent)
+		}
+		go pingFunc()
 
-		_, err := cron.AddFunc(config.Schedule, func() {
-			pingEndpoint(client, ep, config.APIKeyHeaderName, config.APIKey)
+		_, err := c.AddFunc(config.Schedule, func() {
+			pingFunc()
 		})
 		if err != nil {
 			log.Printf("Failed to schedule %s: %v", ep.Name, err)
@@ -40,7 +45,7 @@ func main() {
 		log.Printf("Scheduled: %s", ep.Name)
 	}
 
-	cron.Start()
+	c.Start()
 	log.Println("Pinger started. Press Ctrl+C to exit.")
 	log.Println("...")
 
@@ -50,12 +55,12 @@ func main() {
 	<-sigChan
 
 	log.Println("Shutting down...")
-	ctx := cron.Stop()
+	ctx := c.Stop()
 	<-ctx.Done()
 	log.Println("Shutdown complete")
 }
 
-func pingEndpoint(client *http.Client, ep Endpoint, apiKeyHeaderName, apiKey string) {
+func pingEndpoint(client *http.Client, ep Endpoint, apiKeyHeaderName, apiKey, userAgent string) {
 	start := time.Now()
 
 	req, err := http.NewRequest(ep.Method, ep.URL, nil)
@@ -69,12 +74,21 @@ func pingEndpoint(client *http.Client, ep Endpoint, apiKeyHeaderName, apiKey str
 		req.Header.Set(apiKeyHeaderName, apiKey)
 	}
 
+	if userAgent != "" {
+		req.Header.Set("User-Agent", userAgent)
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("[%s] Failed with %v", ep.Name, err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("[%s] Failed to close response body: %v", ep.Name, err)
+		}
+	}(resp.Body)
 
 	duration := time.Since(start)
 	log.Printf("[%-30s] %-6s Status: %-9s Duration: %v",

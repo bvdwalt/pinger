@@ -74,7 +74,12 @@ func TestLoadConfigInvalidYAML(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
-	defer os.Remove(tmpFile)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("Failed to remove test file: %v", err)
+		}
+	}(tmpFile)
 
 	_, err = loadConfig(tmpFile)
 	if err == nil {
@@ -103,7 +108,12 @@ endpoints:
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
-	defer os.Remove(tmpFile)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("Failed to remove test file: %v", err)
+		}
+	}(tmpFile)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -144,7 +154,12 @@ endpoints: []
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
-	defer os.Remove(tmpFile)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("Failed to remove test file: %v", err)
+		}
+	}(tmpFile)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -178,7 +193,12 @@ endpoints:
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
-	defer os.Remove(tmpFile)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("Failed to remove test file: %v", err)
+		}
+	}(tmpFile)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -220,7 +240,12 @@ endpoints:
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
-	defer os.Remove(tmpFile)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("Failed to remove test file: %v", err)
+		}
+	}(tmpFile)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -258,7 +283,12 @@ endpoints:
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
-	defer os.Remove(tmpFile)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("Failed to remove test file: %v", err)
+		}
+	}(tmpFile)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -285,7 +315,12 @@ endpoints:
 	if err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
-	defer os.Remove(tmpFile)
+	defer func(name string) {
+		err := os.Remove(name)
+		if err != nil {
+			t.Logf("Failed to remove test file: %v", err)
+		}
+	}(tmpFile)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {

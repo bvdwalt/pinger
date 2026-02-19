@@ -131,3 +131,175 @@ endpoints:
 		t.Errorf("Expected 'https://example.com/id2', got '%s'", config.Endpoints[1].URL)
 	}
 }
+
+func TestConfigWithNoEndpoints(t *testing.T) {
+	tmpFile := "test-no-endpoints.yaml"
+	content := `schedule: "*/5 * * * *"
+timeout-seconds: 30
+api-key-header-name: "x-api-key"
+api-key-value: "test-key"
+endpoints: []
+`
+	err := os.WriteFile(tmpFile, []byte(content), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+	defer os.Remove(tmpFile)
+
+	config, err := loadConfig(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to load config: %v", err)
+	}
+
+	if len(config.Endpoints) != 0 {
+		t.Errorf("Expected 0 endpoints, got %d", len(config.Endpoints))
+	}
+}
+
+func TestEndpointExpansionWithMultipleIterations(t *testing.T) {
+	tmpFile := "test-multiple-expansions.yaml"
+	content := `schedule: "*/5 * * * *"
+timeout-seconds: 30
+api-key-header-name: "x-api-key"
+api-key-value: "test-key"
+endpoints:
+  - name: Service {name}
+    url: https://api.example.com/{id}/health
+    method: POST
+    iterations:
+      - name: Alpha
+        id: alpha-001
+      - name: Beta
+        id: beta-002
+      - name: Gamma
+        id: gamma-003
+`
+	err := os.WriteFile(tmpFile, []byte(content), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+	defer os.Remove(tmpFile)
+
+	config, err := loadConfig(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to load config: %v", err)
+	}
+
+	if len(config.Endpoints) != 3 {
+		t.Errorf("Expected 3 endpoints after expansion, got %d", len(config.Endpoints))
+	}
+
+	expectedNames := []string{"Service Alpha", "Service Beta", "Service Gamma"}
+	for i, expectedName := range expectedNames {
+		if config.Endpoints[i].Name != expectedName {
+			t.Errorf("Endpoint %d: expected name '%s', got '%s'", i, expectedName, config.Endpoints[i].Name)
+		}
+	}
+}
+
+func TestMixedEndpointsWithAndWithoutIterations(t *testing.T) {
+	tmpFile := "test-mixed-endpoints.yaml"
+	content := `schedule: "*/5 * * * *"
+timeout-seconds: 30
+api-key-header-name: "x-api-key"
+api-key-value: "test-key"
+endpoints:
+  - name: Static Endpoint
+    url: https://example.com/health
+    method: GET
+  - name: Dynamic {name}
+    url: https://example.com/{id}/status
+    method: POST
+    iterations:
+      - name: Instance1
+        id: inst1
+      - name: Instance2
+        id: inst2
+`
+	err := os.WriteFile(tmpFile, []byte(content), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+	defer os.Remove(tmpFile)
+
+	config, err := loadConfig(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to load config: %v", err)
+	}
+
+	// Should have 3 total endpoints: 1 static + 2 expanded
+	if len(config.Endpoints) != 3 {
+		t.Errorf("Expected 3 endpoints, got %d", len(config.Endpoints))
+	}
+
+	if config.Endpoints[0].Name != "Static Endpoint" {
+		t.Errorf("Expected 'Static Endpoint', got '%s'", config.Endpoints[0].Name)
+	}
+	if config.Endpoints[1].Name != "Dynamic Instance1" {
+		t.Errorf("Expected 'Dynamic Instance1', got '%s'", config.Endpoints[1].Name)
+	}
+	if config.Endpoints[2].Name != "Dynamic Instance2" {
+		t.Errorf("Expected 'Dynamic Instance2', got '%s'", config.Endpoints[2].Name)
+	}
+}
+
+func TestConfigWithSpecialCharacters(t *testing.T) {
+	tmpFile := "test-special-chars.yaml"
+	content := `schedule: "*/5 * * * *"
+timeout-seconds: 30
+api-key-header-name: "x-api-key"
+api-key-value: "test-key-!@#$%"
+endpoints:
+  - name: API with special chars
+    url: "https://example.com/path?query=value&other=123"
+    method: GET
+`
+	err := os.WriteFile(tmpFile, []byte(content), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+	defer os.Remove(tmpFile)
+
+	config, err := loadConfig(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to load config: %v", err)
+	}
+
+	if config.APIKey != "test-key-!@#$%" {
+		t.Errorf("Expected APIKey with special chars, got '%s'", config.APIKey)
+	}
+	if config.Endpoints[0].URL != "https://example.com/path?query=value&other=123" {
+		t.Errorf("Expected URL with special chars, got '%s'", config.Endpoints[0].URL)
+	}
+}
+
+func TestConfigDefaultValues(t *testing.T) {
+	tmpFile := "test-defaults.yaml"
+	content := `schedule: "0 0 * * *"
+endpoints:
+  - name: Endpoint
+    url: https://example.com
+    method: GET
+`
+	err := os.WriteFile(tmpFile, []byte(content), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+	defer os.Remove(tmpFile)
+
+	config, err := loadConfig(tmpFile)
+	if err != nil {
+		t.Fatalf("Failed to load config: %v", err)
+	}
+
+	// Fields not specified should be empty/zero
+	if config.APIKeyHeaderName != "" {
+		t.Errorf("Expected empty APIKeyHeaderName, got '%s'", config.APIKeyHeaderName)
+	}
+	if config.APIKey != "" {
+		t.Errorf("Expected empty APIKey, got '%s'", config.APIKey)
+	}
+	if config.TimeoutSeconds != 0 {
+		t.Errorf("Expected 0 TimeoutSeconds, got %d", config.TimeoutSeconds)
+	}
+}

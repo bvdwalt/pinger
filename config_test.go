@@ -5,6 +5,22 @@ import (
 	"testing"
 )
 
+// createTempTestFile creates a temporary test file with the given content
+// and automatically schedules cleanup using t.Cleanup
+func createTempTestFile(t *testing.T, filename, content string) {
+	t.Helper()
+	err := os.WriteFile(filename, []byte(content), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+	t.Cleanup(func() {
+		err := os.Remove(filename)
+		if err != nil {
+			t.Logf("Failed to remove test file: %v", err)
+		}
+	})
+}
+
 func TestLoadConfigExample(t *testing.T) {
 	config, err := loadConfig("config-example.yaml")
 	if err != nil {
@@ -70,18 +86,9 @@ func TestLoadConfigFileNotFound(t *testing.T) {
 func TestLoadConfigInvalidYAML(t *testing.T) {
 	// Create a temporary invalid YAML file
 	tmpFile := "test-invalid.yaml"
-	err := os.WriteFile(tmpFile, []byte("invalid: yaml: content: ["), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
-			t.Logf("Failed to remove test file: %v", err)
-		}
-	}(tmpFile)
+	createTempTestFile(t, tmpFile, "invalid: yaml: content: [")
 
-	_, err = loadConfig(tmpFile)
+	_, err := loadConfig(tmpFile)
 	if err == nil {
 		t.Error("Expected error when loading invalid YAML")
 	}
@@ -104,16 +111,7 @@ endpoints:
       - name: Org2
         id: id2
 `
-	err := os.WriteFile(tmpFile, []byte(content), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
-			t.Logf("Failed to remove test file: %v", err)
-		}
-	}(tmpFile)
+	createTempTestFile(t, tmpFile, content)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -150,16 +148,7 @@ api-key-header-name: "x-api-key"
 api-key-value: "test-key"
 endpoints: []
 `
-	err := os.WriteFile(tmpFile, []byte(content), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
-			t.Logf("Failed to remove test file: %v", err)
-		}
-	}(tmpFile)
+	createTempTestFile(t, tmpFile, content)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -189,16 +178,7 @@ endpoints:
       - name: Gamma
         id: gamma-003
 `
-	err := os.WriteFile(tmpFile, []byte(content), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
-			t.Logf("Failed to remove test file: %v", err)
-		}
-	}(tmpFile)
+	createTempTestFile(t, tmpFile, content)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -236,16 +216,7 @@ endpoints:
       - name: Instance2
         id: inst2
 `
-	err := os.WriteFile(tmpFile, []byte(content), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
-			t.Logf("Failed to remove test file: %v", err)
-		}
-	}(tmpFile)
+	createTempTestFile(t, tmpFile, content)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -279,16 +250,7 @@ endpoints:
     url: "https://example.com/path?query=value&other=123"
     method: GET
 `
-	err := os.WriteFile(tmpFile, []byte(content), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
-			t.Logf("Failed to remove test file: %v", err)
-		}
-	}(tmpFile)
+	createTempTestFile(t, tmpFile, content)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {
@@ -311,16 +273,7 @@ endpoints:
     url: https://example.com
     method: GET
 `
-	err := os.WriteFile(tmpFile, []byte(content), 0644)
-	if err != nil {
-		t.Fatalf("Failed to create test file: %v", err)
-	}
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
-			t.Logf("Failed to remove test file: %v", err)
-		}
-	}(tmpFile)
+	createTempTestFile(t, tmpFile, content)
 
 	config, err := loadConfig(tmpFile)
 	if err != nil {

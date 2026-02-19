@@ -1,0 +1,10 @@
+.git
+.github
+.gitignore
+.DS_Store
+*.md
+.env
+.env.local
+*.log
+coverage.out
+test-*.yaml

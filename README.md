@@ -44,3 +44,16 @@ See `config-example.yaml` for examples.
 ```bash
 go test -v --cover
 ```
+## Docker
+
+### Build and run with Docker
+
+1. Build the image:
+   ```bash
+   docker build -t pinger .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -v $(pwd)/config.yaml:/app/config.yaml:ro pinger
+   ```

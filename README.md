@@ -13,7 +13,21 @@ A simple Go application that periodically pings HTTP endpoints on a configurable
 - Logs response status codes and duration
 - Graceful shutdown
 
-## Usage
+## Quick Start
+
+```bash
+# See all available commands
+make help
+
+# Build and run (optimized binary)
+make run
+
+# Or build separately
+make build-optimized
+./pinger
+```
+
+### Build
 
 1. Copy the example configuration:
    ```bash
@@ -22,15 +36,10 @@ A simple Go application that periodically pings HTTP endpoints on a configurable
 
 2. Edit `config.yaml` with your endpoints and API key
 
-3. Run the pinger:
+3. Build and run:
    ```bash
-   go run ./cmd/pinger
-   ```
-   
-   Or build and run:
-   ```bash
-   go build -o pinger ./cmd/pinger
-   ./pinger
+   # build and run
+   make run
    ```
 
 ## Configuration
@@ -65,18 +74,34 @@ This comprehensive logging is useful for:
 ## Testing
 
 ```bash
-go test -v --cover
+# Run tests
+make test
+
+# Run tests with coverage
+make test-coverage
+
+# Run all checks (format, vet, test, build)
+make all
 ```
+
 ## Docker
 
-### Build and run with Docker
+```bash
+# Build optimized Docker image
+make docker-build
 
-1. Build the image:
-   ```bash
-   docker build -t pinger .
-   ```
+# Run in foreground
+make docker-run
 
-2. Run the container:
-   ```bash
-   docker run -v $(pwd)/config.yaml:/app/config.yaml:ro pinger
-   ```
+# Run in background
+make docker-run-detached
+
+# View logs
+make docker-logs
+
+# Stop container
+make docker-stop
+
+# Compare image sizes
+make docker-size
+```

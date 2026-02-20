@@ -13,25 +13,23 @@ RUN go mod download
 COPY cmd/ ./cmd/
 COPY internal/ ./internal/
 
-# Build the binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o pinger ./cmd/pinger
+# Build the binary with optimization flags
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -a \
+    -installsuffix cgo \
+    -ldflags="-s -w" \
+    -trimpath \
+    -o pinger ./cmd/pinger
 
-# Final stage
-FROM alpine:latest
-
-# Install ca-certificates for HTTPS
-RUN apk --no-cache add ca-certificates
+# Final stage - use distroless for minimal size
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /build/pinger .
 
-# Copy config file - use config-example.yaml as default
+# Copy config file - use config.yaml as default
 COPY config.yaml .
 
-# Create a non-root user
-RUN adduser -D -u 1000 pinger && chown -R pinger:pinger /app
-USER pinger
-
-ENTRYPOINT ["./pinger"]
+ENTRYPOINT ["/app/pinger"]

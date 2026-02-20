@@ -1,5 +1,5 @@
 # Multi-stage build for pinger
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /build
 
@@ -10,10 +10,11 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy source code
-COPY *.go ./
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
 
 # Build the binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o pinger .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o pinger ./cmd/pinger
 
 # Final stage
 FROM alpine:latest

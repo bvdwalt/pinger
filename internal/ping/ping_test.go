@@ -1,11 +1,12 @@
-package main
+package ping
 
 import (
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
+
+	"github.com/bvdwalt/pinger/internal/config"
 )
 
 // Helper to create a test client
@@ -14,8 +15,8 @@ func testClient(timeout time.Duration) *http.Client {
 }
 
 // Helper to create a test endpoint
-func testEndpoint(url, method string) Endpoint {
-	return Endpoint{Name: "Test", URL: url, Method: method}
+func testEndpoint(url, method string) config.Endpoint {
+	return config.Endpoint{Name: "Test", URL: url, Method: method}
 }
 
 // TestPingEndpointAPIKeyHandling covers API key scenarios with table-driven tests
@@ -42,7 +43,7 @@ func TestPingEndpointAPIKeyHandling(t *testing.T) {
 			}))
 			defer server.Close()
 
-			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, "GET"), tt.headerName, tt.apiKey, tt.userAgent)
+			Execute(testClient(5*time.Second), testEndpoint(server.URL, "GET"), tt.headerName, tt.apiKey, tt.userAgent)
 
 			if tt.shouldExist && headerValue != tt.expectedValue {
 				t.Errorf("expected %q, got %q", tt.expectedValue, headerValue)
@@ -66,7 +67,7 @@ func TestPingEndpointMethods(t *testing.T) {
 			}))
 			defer server.Close()
 
-			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, method), "", "", "Pinger")
+			Execute(testClient(5*time.Second), testEndpoint(server.URL, method), "", "", "Pinger")
 			if capturedMethod != method {
 				t.Errorf("expected %s, got %s", method, capturedMethod)
 			}
@@ -85,7 +86,7 @@ func TestPingEndpointStatusCodes(t *testing.T) {
 			defer server.Close()
 
 			// Should not panic on any status code
-			pingEndpoint(testClient(5*time.Second), testEndpoint(server.URL, "GET"), "", "", "Pinger")
+			Execute(testClient(5*time.Second), testEndpoint(server.URL, "GET"), "", "", "Pinger")
 		})
 	}
 }
@@ -105,61 +106,7 @@ func TestPingEndpointErrorCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Should handle errors gracefully without panicking
-			pingEndpoint(testClient(tt.timeout), testEndpoint(tt.url, "GET"), "", "", "Pinger")
-		})
-	}
-}
-
-func TestStringReplacementInEndpointExpansion(t *testing.T) {
-	tests := []struct {
-		name          string
-		templateName  string
-		templateURL   string
-		iterationName string
-		iterationID   string
-		expectedName  string
-		expectedURL   string
-	}{
-		{
-			name:          "Simple replacement",
-			templateName:  "Endpoint {name}",
-			templateURL:   "https://example.com/{id}",
-			iterationName: "Prod",
-			iterationID:   "prod-123",
-			expectedName:  "Endpoint Prod",
-			expectedURL:   "https://example.com/prod-123",
-		},
-		{
-			name:          "No replacement needed",
-			templateName:  "Static Endpoint",
-			templateURL:   "https://example.com/static",
-			iterationName: "Prod",
-			iterationID:   "prod-123",
-			expectedName:  "Static Endpoint",
-			expectedURL:   "https://example.com/static",
-		},
-		{
-			name:          "Multiple occurrences (name only replaces first)",
-			templateName:  "Endpoint {name} for {name}",
-			templateURL:   "https://example.com/{id}/{id}",
-			iterationName: "Prod",
-			iterationID:   "prod-123",
-			expectedName:  "Endpoint Prod for {name}",
-			expectedURL:   "https://example.com/prod-123/{id}",
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			resultName := strings.Replace(test.templateName, "{name}", test.iterationName, 1)
-			resultURL := strings.Replace(test.templateURL, "{id}", test.iterationID, 1)
-
-			if resultName != test.expectedName {
-				t.Errorf("Name: expected '%s', got '%s'", test.expectedName, resultName)
-			}
-			if resultURL != test.expectedURL {
-				t.Errorf("URL: expected '%s', got '%s'", test.expectedURL, resultURL)
-			}
+			Execute(testClient(tt.timeout), testEndpoint(tt.url, "GET"), "", "", "Pinger")
 		})
 	}
 }

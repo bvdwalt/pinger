@@ -1,9 +1,30 @@
-package main
+package config
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
+
+// getTestConfigPath returns the path to config files located in the project root
+func getTestConfigPath(filename string) string {
+	// Get the directory of the current test file
+	_, currentFile, _, _ := runtime.Caller(1)
+	testDir := filepath.Dir(currentFile)
+
+	// Navigate up from internal/config to project root
+	projectRoot := filepath.Join(testDir, "..", "..")
+
+	// Try the project root first
+	configPath := filepath.Join(projectRoot, filename)
+	if _, err := os.Stat(configPath); err == nil {
+		return configPath
+	}
+
+	// Fall back to just the filename (might work if running from project root)
+	return filename
+}
 
 // createTempTestFile creates a temporary test file with the given content
 // and automatically schedules cleanup using t.Cleanup
@@ -22,7 +43,8 @@ func createTempTestFile(t *testing.T, filename, content string) {
 }
 
 func TestLoadConfigExample(t *testing.T) {
-	config, err := loadConfig("config-example.yaml")
+	configPath := getTestConfigPath("config-example.yaml")
+	config, err := LoadConfig(configPath)
 	if err != nil {
 		t.Fatalf("Failed to load config-example.yaml: %v", err)
 	}
@@ -62,7 +84,8 @@ func TestLoadConfigExample(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
-	config, err := loadConfig("config.yaml")
+	configPath := getTestConfigPath("config.yaml")
+	config, err := LoadConfig(configPath)
 	if err != nil {
 		t.Fatalf("Failed to load config.yaml: %v", err)
 	}
@@ -77,7 +100,7 @@ func TestLoadConfig(t *testing.T) {
 }
 
 func TestLoadConfigFileNotFound(t *testing.T) {
-	_, err := loadConfig("nonexistent.yaml")
+	_, err := LoadConfig("nonexistent.yaml")
 	if err == nil {
 		t.Error("Expected error when loading non-existent file")
 	}
@@ -88,7 +111,7 @@ func TestLoadConfigInvalidYAML(t *testing.T) {
 	tmpFile := "test-invalid.yaml"
 	createTempTestFile(t, tmpFile, "invalid: yaml: content: [")
 
-	_, err := loadConfig(tmpFile)
+	_, err := LoadConfig(tmpFile)
 	if err == nil {
 		t.Error("Expected error when loading invalid YAML")
 	}
@@ -113,7 +136,7 @@ endpoints:
 `
 	createTempTestFile(t, tmpFile, content)
 
-	config, err := loadConfig(tmpFile)
+	config, err := LoadConfig(tmpFile)
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
@@ -150,7 +173,7 @@ endpoints: []
 `
 	createTempTestFile(t, tmpFile, content)
 
-	config, err := loadConfig(tmpFile)
+	config, err := LoadConfig(tmpFile)
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
@@ -180,7 +203,7 @@ endpoints:
 `
 	createTempTestFile(t, tmpFile, content)
 
-	config, err := loadConfig(tmpFile)
+	config, err := LoadConfig(tmpFile)
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
@@ -218,7 +241,7 @@ endpoints:
 `
 	createTempTestFile(t, tmpFile, content)
 
-	config, err := loadConfig(tmpFile)
+	config, err := LoadConfig(tmpFile)
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
@@ -252,7 +275,7 @@ endpoints:
 `
 	createTempTestFile(t, tmpFile, content)
 
-	config, err := loadConfig(tmpFile)
+	config, err := LoadConfig(tmpFile)
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}
@@ -275,7 +298,7 @@ endpoints:
 `
 	createTempTestFile(t, tmpFile, content)
 
-	config, err := loadConfig(tmpFile)
+	config, err := LoadConfig(tmpFile)
 	if err != nil {
 		t.Fatalf("Failed to load config: %v", err)
 	}

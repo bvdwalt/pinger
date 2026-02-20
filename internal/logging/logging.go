@@ -1,4 +1,4 @@
-package main
+package logging
 
 import (
 	"log"
@@ -6,22 +6,22 @@ import (
 	"net/http/httputil"
 )
 
-// LoggingTransport wraps http.RoundTripper to log HTTP requests and responses
-type LoggingTransport struct {
+// Transport wraps http.RoundTripper to log HTTP requests and responses
+type Transport struct {
 	transport     http.RoundTripper
 	enableLogging bool
 }
 
 // NewLoggingTransport creates a new LoggingTransport with the default HTTP transport
-func NewLoggingTransport(enableLogging bool) *LoggingTransport {
-	return &LoggingTransport{
+func NewLoggingTransport(enableLogging bool) *Transport {
+	return &Transport{
 		transport:     http.DefaultTransport,
 		enableLogging: enableLogging,
 	}
 }
 
 // RoundTrip implements the http.RoundTripper interface and logs requests/responses
-func (lt *LoggingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (lt *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if lt.enableLogging {
 		requestDump, _ := httputil.DumpRequestOut(req, false)
 		log.Printf("[HTTP Request]\n%s", string(requestDump))

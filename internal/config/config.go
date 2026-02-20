@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"os"
@@ -29,7 +29,7 @@ type Config struct {
 	Endpoints         []Endpoint `yaml:"endpoints"`
 }
 
-func loadConfig(filename string) (*Config, error) {
+func LoadConfig(filename string) (*Config, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err

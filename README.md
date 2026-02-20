@@ -24,7 +24,13 @@ A simple Go application that periodically pings HTTP endpoints on a configurable
 
 3. Run the pinger:
    ```bash
-   go run .
+   go run ./cmd/pinger
+   ```
+   
+   Or build and run:
+   ```bash
+   go build -o pinger ./cmd/pinger
+   ./pinger
    ```
 
 ## Configuration

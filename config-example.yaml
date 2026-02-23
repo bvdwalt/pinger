@@ -1,28 +1,24 @@
 # Pinger Configuration Example
 # Copy this file to config.yaml and customize for your needs
 
-schedule: "*/5 * * * *" # Cron schedule: Every 5 minutes
+schedule: "*/30 * * * *" # Cron schedule: Every 30 minutes
 timeout-seconds: 90
 api-key-header-name: "x-api-key"
 api-key-value: "YOUR_API_KEY_HERE"
-user-agent: "Pinger/1.0 (https://github.com/bvdwalt/pinger)"
-enable-http-logging: false
+user-agent: "Pinger/1.0"
+log-level: info
 
 endpoints:
   # Simple endpoint examples
   - name: Example API Health Check
-    url: https://api.example.com/health
+    url: https://example.com
     method: GET
-
-  - name: Another Service Status
-    url: https://api.example.com/status
-    method: POST
 
   # Parameterized endpoint example with iterations
   # Use {name} and {id} placeholders in the name and url
   # These will be replaced for each iteration
   - name: Organization Assets ({name})
-    url: https://api.example.com/organizations/{id}/assets
+    url: https://example.com/organizations/{id}/assets
     method: GET
     iterations:
       - name: Organization A

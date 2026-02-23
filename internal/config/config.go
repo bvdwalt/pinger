@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log/slog"
 	"os"
 	"strings"
 
@@ -20,13 +21,14 @@ type Iterations struct {
 }
 
 type Config struct {
-	APIKeyHeaderName  string     `yaml:"api-key-header-name"`
-	APIKey            string     `yaml:"api-key-value"`
-	UserAgent         string     `yaml:"user-agent"`
-	TimeoutSeconds    int        `yaml:"timeout-seconds"`
-	Schedule          string     `yaml:"schedule"`
-	EnableHttpLogging bool       `yaml:"enable-http-logging"`
-	Endpoints         []Endpoint `yaml:"endpoints"`
+	APIKeyHeaderName string     `yaml:"api-key-header-name"`
+	APIKey           string     `yaml:"api-key-value"`
+	UserAgent        string     `yaml:"user-agent"`
+	TimeoutSeconds   int        `yaml:"timeout-seconds"`
+	Schedule         string     `yaml:"schedule"`
+	Endpoints        []Endpoint `yaml:"endpoints"`
+	LogLevel         string     `yaml:"log-level"`
+	ParsedLogLevel   slog.Level `yaml:"-"`
 }
 
 func LoadConfig(filename string) (*Config, error) {
@@ -57,5 +59,27 @@ func LoadConfig(filename string) (*Config, error) {
 	}
 	config.Endpoints = expandedEndpoints
 
+	level, ok := parseLogLevel(config.LogLevel)
+	if !ok && config.LogLevel != "" {
+		slog.Warn("Invalid log level, defaulting to info", "log-level", config.LogLevel)
+	}
+	config.ParsedLogLevel = level
+
 	return &config, nil
+}
+
+// ParseLogLevel maps a config string to slog.Level.
+func parseLogLevel(value string) (slog.Level, bool) {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "debug":
+		return slog.LevelDebug, true
+	case "info", "":
+		return slog.LevelInfo, value != ""
+	case "warn", "warning":
+		return slog.LevelWarn, true
+	case "error":
+		return slog.LevelError, true
+	default:
+		return slog.LevelInfo, false
+	}
 }

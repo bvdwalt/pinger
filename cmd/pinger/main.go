@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,15 +20,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.ParsedLogLevel})
+	slog.SetDefault(slog.New(handler))
 
 	client := &http.Client{
 		Timeout:   time.Duration(cfg.TimeoutSeconds) * time.Second,
-		Transport: logging.NewLoggingTransport(cfg.EnableHttpLogging),
+		Transport: logging.NewLoggingTransport(),
 	}
 
 	c := cron.New()
 
-	log.Printf("Scheduling Pinger with cron: '%s'", cfg.Schedule)
+	slog.Info("Scheduling pinger", "cron", cfg.Schedule)
 	for _, endpoint := range cfg.Endpoints {
 		ep := endpoint
 
@@ -41,15 +44,14 @@ func main() {
 			pingFunc()
 		})
 		if err != nil {
-			log.Printf("Failed to schedule %s: %v", ep.Name, err)
+			slog.Error("Failed to schedule", "endpoint", ep, "err", err)
 			continue
 		}
-		log.Printf("Scheduled: %s", ep.Name)
+		slog.Info("Scheduled", "endpoint", ep.Name)
 	}
 
 	c.Start()
 	log.Println("Pinger started. Press Ctrl+C to exit.")
-	log.Println("...")
 
 	// Wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)

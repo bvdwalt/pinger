@@ -1,6 +1,7 @@
 package ping
 
 import (
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -43,7 +44,7 @@ func TestPingEndpointAPIKeyHandling(t *testing.T) {
 			}))
 			defer server.Close()
 
-			Execute(testClient(5*time.Second), testEndpoint(server.URL, "GET"), tt.headerName, tt.apiKey, tt.userAgent)
+			Execute(testClient(5*time.Millisecond), testEndpoint(server.URL, "GET"), tt.headerName, tt.apiKey, tt.userAgent)
 
 			if tt.shouldExist && headerValue != tt.expectedValue {
 				t.Errorf("expected %q, got %q", tt.expectedValue, headerValue)
@@ -67,7 +68,7 @@ func TestPingEndpointMethods(t *testing.T) {
 			}))
 			defer server.Close()
 
-			Execute(testClient(5*time.Second), testEndpoint(server.URL, method), "", "", "Pinger")
+			Execute(testClient(5*time.Millisecond), testEndpoint(server.URL, method), "", "", "Pinger")
 			if capturedMethod != method {
 				t.Errorf("expected %s, got %s", method, capturedMethod)
 			}
@@ -86,21 +87,39 @@ func TestPingEndpointStatusCodes(t *testing.T) {
 			defer server.Close()
 
 			// Should not panic on any status code
-			Execute(testClient(5*time.Second), testEndpoint(server.URL, "GET"), "", "", "Pinger")
+			Execute(testClient(5*time.Millisecond), testEndpoint(server.URL, "GET"), "", "", "Pinger")
 		})
 	}
 }
 
 // TestPingEndpointErrorCases verifies graceful error handling
 func TestPingEndpointErrorCases(t *testing.T) {
+	closedAddr := func(t *testing.T) string {
+		listener, err := net.Listen("tcp", "127.0.0.1:0")
+		if err != nil {
+			t.Fatalf("failed to create listener: %v", err)
+		}
+		addr := listener.Addr().String()
+		if err := listener.Close(); err != nil {
+			t.Fatalf("failed to close listener: %v", err)
+		}
+		return "http://" + addr
+	}
+
+	slowServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(10 * time.Millisecond)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer slowServer.Close()
+
 	tests := []struct {
 		name    string
 		url     string
 		timeout time.Duration
 	}{
-		{"Invalid URL", "://invalid", 5 * time.Second},
-		{"Connection refused", "https://localhost:1", 1 * time.Second},
-		{"Timeout", "https://httpbin.org/delay/10", 100 * time.Millisecond},
+		{"Invalid URL", "://invalid", 5 * time.Millisecond},
+		{"Connection refused", closedAddr(t), 10 * time.Millisecond},
+		{"Timeout", slowServer.URL, 1 * time.Millisecond},
 	}
 
 	for _, tt := range tests {

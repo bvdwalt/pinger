@@ -6,7 +6,7 @@ timeout-seconds: 90
 api-key-header-name: "x-api-key"
 api-key-value: "YOUR_API_KEY_HERE"
 user-agent: "Pinger/1.0"
-log-level: info
+log-level: info # debug, info, warn, error
 
 endpoints:
   # Simple endpoint examples

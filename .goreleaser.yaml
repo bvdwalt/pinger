@@ -1,0 +1,54 @@
+version: 2
+
+project_name: pinger
+
+before:
+  hooks:
+    - go mod download
+
+builds:
+  - main: ./cmd/pinger
+    binary: pinger
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - config-example.yaml
+
+homebrew_casks:
+  - repository:
+      owner: bvdwalt
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/bvdwalt/pinger"
+    description: "Periodically pings HTTP endpoints on a configurable cron schedule"
+    license: "MIT"
+
+checksum:
+  name_template: checksums.txt
+
+release:
+  github:
+    owner: bvdwalt
+    name: pinger
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"

@@ -13,6 +13,22 @@ A simple Go application that periodically pings HTTP endpoints on a configurable
 - Logs response status codes and duration
 - Graceful shutdown
 
+## Installation
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew install --cask bvdwalt/tap/pinger
+```
+
+### From source
+
+```bash
+git clone https://github.com/bvdwalt/pinger.git
+cd pinger
+just build
+```
+
 ## Usage
 
 1. Copy the example configuration:
@@ -24,13 +40,7 @@ A simple Go application that periodically pings HTTP endpoints on a configurable
 
 3. Run the pinger:
    ```bash
-   go run ./cmd/pinger
-   ```
-   
-   Or build and run:
-   ```bash
-   go build -o pinger ./cmd/pinger
-   ./pinger
+   just run
    ```
 
 ## Configuration
@@ -62,8 +72,15 @@ This comprehensive logging is useful for:
 - Tracking response times
 - Identifying configuration problems
 
-## Testing
+## Development
 
 ```bash
-go test -v --cover
+just build          # Build the binary to ./pinger
+just run            # Build and run the application
+just test           # Run all tests
+just test-verbose   # Run tests with verbose output
+just test-coverage  # Run tests with coverage report (outputs coverage.html)
+just fmt            # Format all Go code
+just lint           # Run golangci-lint
+just clean          # Remove build artifacts
 ```

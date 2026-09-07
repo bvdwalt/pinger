@@ -95,7 +95,7 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// ParseLogLevel maps a config string to slog.Level.
+// parseLogLevel maps a config string to slog.Level.
 func parseLogLevel(value string) (slog.Level, bool) {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "debug":

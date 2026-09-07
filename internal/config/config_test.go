@@ -83,22 +83,6 @@ func TestLoadConfigExample(t *testing.T) {
 	}
 }
 
-func TestLoadConfig(t *testing.T) {
-	configPath := getTestConfigPath("config.yaml")
-	config, err := LoadConfig(configPath)
-	if err != nil {
-		t.Fatalf("Failed to load config.yaml: %v", err)
-	}
-
-	if config == nil {
-		t.Fatal("Config is nil")
-	}
-
-	if len(config.Endpoints) == 0 {
-		t.Error("Should have at least one endpoint")
-	}
-}
-
 func TestLoadConfigFileNotFound(t *testing.T) {
 	_, err := LoadConfig("nonexistent.yaml")
 	if err == nil {

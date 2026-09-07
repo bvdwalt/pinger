@@ -39,9 +39,7 @@ func main() {
 	c := cron.New()
 
 	slog.Info("Scheduling pinger", "cron", cfg.Schedule)
-	for _, endpoint := range cfg.Endpoints {
-		ep := endpoint
-
+	for _, ep := range cfg.Endpoints {
 		// Run immediately on startup
 		pingFunc := func() {
 			ping.Execute(client, ep, cfg.APIKeyHeaderName, cfg.APIKey, cfg.UserAgent)

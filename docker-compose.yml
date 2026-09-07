@@ -1,0 +1,6 @@
+services:
+  pinger:
+    build: .
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+    restart: unless-stopped

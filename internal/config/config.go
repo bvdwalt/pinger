@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -65,7 +66,33 @@ func LoadConfig(filename string) (*Config, error) {
 	}
 	config.ParsedLogLevel = level
 
+	if err := config.Validate(); err != nil {
+		return nil, err
+	}
+
 	return &config, nil
+}
+
+func (c *Config) Validate() error {
+	var errs []string
+	if c.Schedule == "" {
+		errs = append(errs, "schedule is required")
+	}
+	if len(c.Endpoints) == 0 {
+		errs = append(errs, "at least one endpoint is required")
+	}
+	for i, ep := range c.Endpoints {
+		if ep.URL == "" {
+			errs = append(errs, fmt.Sprintf("endpoint[%d] missing url", i))
+		}
+		if ep.Method == "" {
+			errs = append(errs, fmt.Sprintf("endpoint[%d] missing method", i))
+		}
+	}
+	if len(errs) > 0 {
+		return fmt.Errorf("invalid config: %s", strings.Join(errs, "; "))
+	}
+	return nil
 }
 
 // ParseLogLevel maps a config string to slog.Level.

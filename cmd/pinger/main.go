@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"log/slog"
 	"net/http"
@@ -15,8 +16,15 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+var version = "dev"
+
 func main() {
-	cfg, err := config.LoadConfig("config.yaml")
+	configPath := flag.String("config", "config.yaml", "path to config file")
+	flag.Parse()
+
+	slog.Info("Starting pinger", "version", version)
+
+	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}

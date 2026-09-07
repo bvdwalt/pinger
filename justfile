@@ -39,7 +39,7 @@ fmt:
 
 lint:
     @echo "Running linter..."
-    @golangci-lint run ./... 2>/dev/null || echo "golangci-lint not installed. Install with: brew install golangci-lint"
+    @golangci-lint run ./...
 
 clean:
     @echo "Cleaning build artifacts..."
@@ -66,6 +66,24 @@ tag:
     fi
     git tag "$NEXT"
     echo "Tagged $NEXT"
+
+# Build the Docker image
+docker-build:
+    @echo "Building Docker image..."
+    @docker build --build-arg VERSION={{VERSION}} -t {{BINARY_NAME}}:{{VERSION}} -t {{BINARY_NAME}}:latest .
+    @echo "Built {{BINARY_NAME}}:{{VERSION}}"
+
+# Run via docker compose (detached)
+docker-up:
+    @docker compose up -d
+
+# Stop docker compose
+docker-down:
+    @docker compose down
+
+# Tail logs from docker compose
+docker-logs:
+    @docker compose logs -f
 
 # Tag and push to origin — triggers the goreleaser release workflow
 release:

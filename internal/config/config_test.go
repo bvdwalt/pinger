@@ -173,13 +173,9 @@ endpoints: []
 `
 	createTempTestFile(t, tmpFile, content)
 
-	config, err := LoadConfig(tmpFile)
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
-
-	if len(config.Endpoints) != 0 {
-		t.Errorf("Expected 0 endpoints, got %d", len(config.Endpoints))
+	_, err := LoadConfig(tmpFile)
+	if err == nil {
+		t.Fatal("Expected validation error for empty endpoints, got nil")
 	}
 }
 

@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bvdwalt/pinger/internal/config"
-	"github.com/bvdwalt/pinger/internal/logging"
-	"github.com/bvdwalt/pinger/internal/ping"
+	"github.com/jigsmiths/pinger/internal/config"
+	"github.com/jigsmiths/pinger/internal/logging"
+	"github.com/jigsmiths/pinger/internal/ping"
 	"github.com/robfig/cron/v3"
 )
 

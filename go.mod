@@ -1,4 +1,4 @@
-module github.com/bvdwalt/pinger
+module github.com/jigsmiths/pinger
 
 go 1.26.0
 

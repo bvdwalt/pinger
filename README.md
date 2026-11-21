@@ -18,13 +18,13 @@ A simple Go application that periodically pings HTTP endpoints on a configurable
 ### Homebrew (macOS / Linux)
 
 ```bash
-brew install --cask bvdwalt/tap/pinger
+brew install --cask jigsmiths/tap/pinger
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/bvdwalt/pinger.git
+git clone https://github.com/jigsmiths/pinger.git
 cd pinger
 just build
 ```

@@ -30,10 +30,10 @@ archives:
 
 homebrew_casks:
   - repository:
-      owner: bvdwalt
+      owner: jigsmiths
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    homepage: "https://github.com/bvdwalt/pinger"
+    homepage: "https://github.com/jigsmiths/pinger"
     description: "Periodically pings HTTP endpoints on a configurable cron schedule"
     license: "MIT"
 
@@ -42,7 +42,7 @@ checksum:
 
 release:
   github:
-    owner: bvdwalt
+    owner: jigsmiths
     name: pinger
 
 changelog:

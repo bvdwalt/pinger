@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bvdwalt/pinger/internal/config"
+	"github.com/jigsmiths/pinger/internal/config"
 )
 
 func Execute(client *http.Client, ep config.Endpoint, apiKeyHeaderName, apiKey, userAgent string) {

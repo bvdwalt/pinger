@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bvdwalt/pinger/internal/config"
+	"github.com/jigsmiths/pinger/internal/config"
 )
 
 // Helper to create a test client
